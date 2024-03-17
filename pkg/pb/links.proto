@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package pb;
+
+option go_package = "/pb";
+
+service LinkService {
+  rpc Create(CreateLinkRequest) returns (google.protobuf.Empty) {}
+  rpc Get(GetLinkRequest) returns (Link) {}
+  rpc Update(UpdateLinkRequest) returns (google.protobuf.Empty) {}
+  rpc Delete(DeleteLinkRequest) returns (google.protobuf.Empty) {}
+  rpc List(google.protobuf.Empty) returns (ListLinkResponse) {}
+}
+
+message Link {
+  string id = 1;
+  string title = 2;
+  string url = 3;
+  repeated string images = 4;
+  repeated string tags = 5;
+  string user_id = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message CreateLinkRequest {
+  string id = 1;
+  string title = 2;
+  string url = 3;
+  repeated string images = 4;
+  repeated string tags = 5;
+  string user_id = 6;
+}
+
+message GetLinkRequest {
+  string id = 1;
+}
+
+message UpdateLinkRequest {
+  string id = 1;
+  string title = 2;
+  string url = 3;
+  repeated string images = 4;
+  repeated string tags = 5;
+  string user_id = 6;
+}
+
+message DeleteLinkRequest {
+  string id = 1;
+}
+
+message ListLinkResponse {
+  repeated Link links = 1;
+}
