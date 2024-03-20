@@ -6,7 +6,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 
 	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/pb"
 )
@@ -23,7 +22,7 @@ type Handler struct {
 	timeout         time.Duration
 }
 
-func (h Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*emptypb.Empty, error) {
+func (h Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -39,7 +38,7 @@ func (h Handler) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, 
 	panic("implement me")
 }
 
-func (h Handler) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*emptypb.Empty, error) {
+func (h Handler) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -50,7 +49,7 @@ func (h Handler) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*emp
 func (h Handler) DeleteUser(
 	ctx context.Context,
 	in *pb.DeleteUserRequest,
-) (*emptypb.Empty, error) {
+) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -60,7 +59,7 @@ func (h Handler) DeleteUser(
 
 func (h Handler) ListUsers(
 	ctx context.Context,
-	in *emptypb.Empty,
+	in *pb.Empty,
 ) (*pb.ListUsersResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
