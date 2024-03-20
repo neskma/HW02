@@ -21,11 +21,14 @@ genid:
 
 .PHONY: generate
 generate:
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-	./pkg/pb/users.proto
+	protoc --go_out=pkg/pb --go_opt=paths=source_relative --go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
+	--proto_path=./pkg/pb ./pkg/pb/common.proto
 
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-	./pkg/pb/links.proto
+	protoc --go_out=pkg/pb --go_opt=paths=source_relative --go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
+	--proto_path=./pkg/pb ./pkg/pb/users.proto
+
+	protoc --go_out=pkg/pb --go_opt=paths=source_relative --go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
+	--proto_path=./pkg/pb ./pkg/pb/links.proto
 
 	go generate ./...
 

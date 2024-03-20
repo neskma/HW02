@@ -1,17 +1,17 @@
 syntax = "proto3";
+import "common.proto";
 
-import "google/protobuf/empty.proto";
 
 package pb;
 
-option go_package = "/pb";
+option go_package = "gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/pb";
 
 service LinkService {
-  rpc Create(CreateLinkRequest) returns (google.protobuf.Empty) {}
-  rpc Get(GetLinkRequest) returns (Link) {}
-  rpc Update(UpdateLinkRequest) returns (google.protobuf.Empty) {}
-  rpc Delete(DeleteLinkRequest) returns (google.protobuf.Empty) {}
-  rpc List(google.protobuf.Empty) returns (ListLinkResponse) {}
+  rpc CreateLink(CreateLinkRequest) returns (Empty) {}
+  rpc GetLink(GetLinkRequest) returns (Link) {}
+  rpc UpdateLink(UpdateLinkRequest) returns (Empty) {}
+  rpc DeleteLink(DeleteLinkRequest) returns (Empty) {}
+  rpc ListLinks(Empty) returns (ListLinkResponse) {}
 }
 
 message Link {
