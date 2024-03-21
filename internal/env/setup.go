@@ -98,7 +98,7 @@ func Setup(ctx context.Context) (*Env, error) {
 
 	// Клиент для осуществления запросов в links service
 	linksClientConn, err := grpc.DialContext(
-		ctx, cfg.ApiGWService.UsersClientAddr, grpc.WithTransportCredentials(insecure.NewCredentials()),
+		ctx, cfg.ApiGWService.LinksClientAddr, grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("grpc DialContext: %w", err)
