@@ -33,8 +33,8 @@ const (
 
 // Error defines model for Error.
 type Error struct {
-	Code    *ErrorCode `json:"code,omitempty"`
-	Message *string    `json:"message,omitempty"`
+	Code    ErrorCode `json:"code"`
+	Message *string   `json:"message,omitempty"`
 }
 
 // ErrorCode defines model for Error.Code.
@@ -42,40 +42,40 @@ type ErrorCode string
 
 // Link defines model for Link.
 type Link struct {
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	Id        *openapi_types.UUID `json:"id,omitempty"`
-	Images    *[]string           `json:"images,omitempty"`
-	Tags      *[]string           `json:"tags,omitempty"`
-	Title     *string             `json:"title"`
-	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
-	Url       *string             `json:"url,omitempty"`
-	UserId    *string             `json:"user_id,omitempty"`
+	CreatedAt time.Time          `json:"created_at"`
+	Id        openapi_types.UUID `json:"id"`
+	Images    *[]string          `json:"images,omitempty"`
+	Tags      *[]string          `json:"tags,omitempty"`
+	Title     *string            `json:"title"`
+	UpdatedAt time.Time          `json:"updated_at"`
+	Url       string             `json:"url"`
+	UserId    string             `json:"user_id"`
 }
 
 // LinkCreate defines model for LinkCreate.
 type LinkCreate struct {
-	Id     *openapi_types.UUID `json:"id,omitempty"`
-	Images *[]string           `json:"images,omitempty"`
-	Tags   *[]string           `json:"tags,omitempty"`
-	Title  *string             `json:"title"`
-	Url    *string             `json:"url,omitempty"`
-	UserId *string             `json:"user_id,omitempty"`
+	Id     string    `json:"id"`
+	Images *[]string `json:"images,omitempty"`
+	Tags   *[]string `json:"tags,omitempty"`
+	Title  *string   `json:"title"`
+	Url    string    `json:"url"`
+	UserId string    `json:"user_id"`
 }
 
 // User defines model for User.
 type User struct {
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	Id        *openapi_types.UUID `json:"id,omitempty"`
-	Password  *string             `json:"password,omitempty"`
-	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
-	Username  *string             `json:"username,omitempty"`
+	CreatedAt time.Time          `json:"created_at"`
+	Id        openapi_types.UUID `json:"id"`
+	Password  string             `json:"password"`
+	UpdatedAt time.Time          `json:"updated_at"`
+	Username  string             `json:"username"`
 }
 
 // UserCreate defines model for UserCreate.
 type UserCreate struct {
-	Id       *openapi_types.UUID `json:"id,omitempty"`
-	Password *string             `json:"password,omitempty"`
-	Username *string             `json:"username,omitempty"`
+	Id       openapi_types.UUID `json:"id"`
+	Password string             `json:"password"`
+	Username string             `json:"username"`
 }
 
 // PostLinksJSONRequestBody defines body for PostLinks for application/json ContentType.
@@ -2174,24 +2174,25 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"tyTLsv8DAAD//6EXj/WZIAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

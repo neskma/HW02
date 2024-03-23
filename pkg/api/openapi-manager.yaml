@@ -304,6 +304,13 @@ components:
  schemas:
     Link:
       type: object
+      required:
+        - id
+        - title
+        - url
+        - user_id
+        - created_at
+        - updated_at
       properties:
         id:
           type: string
@@ -332,10 +339,14 @@ components:
 
     LinkCreate:
       type: object
+      required:
+        - id
+        - title
+        - url
+        - user_id
       properties:
         id:
           type: string
-          format: uuid
         title:
           type: string
           nullable: true
@@ -354,6 +365,10 @@ components:
 
     UserCreate:
       type: object
+      required:
+       - id
+       - username
+       - password
       properties:
         id:
           type: string
@@ -365,6 +380,12 @@ components:
 
     User:
       type: object
+      required:
+        - id
+        - username
+        - password
+        - created_at
+        - updated_at
       properties:
         id:
           type: string
@@ -381,6 +402,8 @@ components:
           format: date-time
     Error:
       type: object
+      required:
+       - code
       properties:
         message:
           type: string
