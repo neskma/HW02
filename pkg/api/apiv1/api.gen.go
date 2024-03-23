@@ -15,12 +15,10 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for ErrorCode.
@@ -42,40 +40,40 @@ type ErrorCode string
 
 // Link defines model for Link.
 type Link struct {
-	CreatedAt time.Time          `json:"created_at"`
-	Id        openapi_types.UUID `json:"id"`
-	Images    *[]string          `json:"images,omitempty"`
-	Tags      *[]string          `json:"tags,omitempty"`
-	Title     *string            `json:"title"`
-	UpdatedAt time.Time          `json:"updated_at"`
-	Url       string             `json:"url"`
-	UserId    string             `json:"user_id"`
+	CreatedAt string   `json:"created_at"`
+	Id        string   `json:"id"`
+	Images    []string `json:"images"`
+	Tags      []string `json:"tags"`
+	Title     *string  `json:"title"`
+	UpdatedAt string   `json:"updated_at"`
+	Url       string   `json:"url"`
+	UserId    string   `json:"user_id"`
 }
 
 // LinkCreate defines model for LinkCreate.
 type LinkCreate struct {
-	Id     string    `json:"id"`
-	Images *[]string `json:"images,omitempty"`
-	Tags   *[]string `json:"tags,omitempty"`
-	Title  *string   `json:"title"`
-	Url    string    `json:"url"`
-	UserId string    `json:"user_id"`
+	Id     string   `json:"id"`
+	Images []string `json:"images"`
+	Tags   []string `json:"tags"`
+	Title  *string  `json:"title"`
+	Url    string   `json:"url"`
+	UserId string   `json:"user_id"`
 }
 
 // User defines model for User.
 type User struct {
-	CreatedAt time.Time          `json:"created_at"`
-	Id        openapi_types.UUID `json:"id"`
-	Password  string             `json:"password"`
-	UpdatedAt time.Time          `json:"updated_at"`
-	Username  string             `json:"username"`
+	CreatedAt string `json:"created_at"`
+	Id        string `json:"id"`
+	Password  string `json:"password"`
+	UpdatedAt string `json:"updated_at"`
+	Username  string `json:"username"`
 }
 
 // UserCreate defines model for UserCreate.
 type UserCreate struct {
-	Id       openapi_types.UUID `json:"id"`
-	Password string             `json:"password"`
-	Username string             `json:"username"`
+	Id       string `json:"id"`
+	Password string `json:"password"`
+	Username string `json:"username"`
 }
 
 // PostLinksJSONRequestBody defines body for PostLinks for application/json ContentType.
@@ -2174,25 +2172,25 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xYy24bNxT9lQHb5TRSWnejXVu3hYEsghZeBUFAa2iHiYackJwUhjBAFKNoUAfIFzRF",
-	"0B9Q3Ah+VfIvXP5RcUlZGkmjly1LMuKNNSPzcXju4bn3qk6qMk6kYMJoUqkTXX3KYuoef1RKKnxIlEyY",
-	"Mpy5r6syYvjJRBqTyiMipPlJpiIiIalKsVvjVUNCskOjX9iLlGl84cIwJWjtV6ZeMuXXfRwSs58wUiHa",
-	"KC72SBaSmGlN99zqQ//LQqLYi5QrFuGeDkN/BbnzjFUNrvCAi+cFkBWjhkVPqMG3XalifCIRNewrw2NG",
-	"CrDwaGBsmvKocFhM9/wm3LBYF0DvTaJK0X33TvfmncFNzdEi0lqN7uCzUSkrwJMm0dxHTVWtEEWqmXri",
-	"eZgcDk+Nw+hX688N8+QPwBsXvh/c+NEgFgJZwwDcIJlFlG1rppaq+IRq/ZtUxdG4kvw0mkPMZqSmNzwH",
-	"ZT6VIWWTVXZNEq5/oFHYOJWLXekW9Wp01yWgIgrwRMF3D7dISF4ypbkUpELu3yvfKyMemTBBE04q5Bv3",
-	"Fe5jnrrjlmpcPHdPe8yFDLmghkuxFZEK+ZmZB24AwtaJFNqz9HW57FOBMEy4eTRJarzqZpaeadz/MpcM",
-	"XLQvFdslFfJFqZ91St2UU3LePXL38NwR01XFE+PPBR/gAk5sAzpwFkAHPto/oQVn9jV04AgX2JgT3SRQ",
-	"PlkVofgLWnAELfsK2vYQTgM4hiZc2FfQsQ1E8e1SULy3b+AEPsIZNAPbcHA8qKYTm07jmKp9HPk3dODc",
-	"Htg/4MS+tm8DOMLxAwTaw+AyCInUBXp4KHVOEC69fy+j/YWdM+f/2eBdQbfNRlR4Hz+GGemfJ7AHtgEX",
-	"0LJvoA2dwGnmGD5BE9p3QhknlA+XJHmZtPFaeeA5qXSFkoVdCymhi5Xq+HdrM5tqKGhY226scyNFY2aY",
-	"0qTyqE444kWHIiHxNkrSy6GDgghzrAwb7eO1tSzbsA17COf4sj4q3ChvLAGFN6G3cIyiQoVBC99RZS38",
-	"04RT+AQtvJ6T3atH4hmchCjoI/vOHantztcKbCOAi6LdoAX/5YVb51HmbaTGfEUwKNlN971T7VY0k1pd",
-	"Vr+OUjfmtLUDZ2nnnrdeKFfvK+GNb54jZaqE/umy1E1/w2bm5BJsbSLsid61LBWUF5pWZ+EvR92yDGFK",
-	"BG9BGTVJR0laVESlN66j1Vdm5fksDFn0lUbexj6fvHjrrsH7XrymXgNMtVjATWwzt92AZdRs7geTudvM",
-	"caXE6V0fMV/DaX+fQub4zrOvkcX7W+43oSt3nuOK27sudEFdKHTgX0wWhfqx73JWM2NV7xS1yqp+VskU",
-	"V/jr06ytn36Gqv0xkpml6F+qSMoLdbR5w7qCBuBWi2wkxc0gs3E9wU3LbPU5s3x1A/zc+4NbfUtGeoWp",
-	"tyTLsv8DAAD//6EXj/WZIAAA",
+	"H4sIAAAAAAAC/+xY224bNxD9lQXbx0WktO6L3tq6LQTkIWjhpyAI1lpaYaIlNyQ3hSEsEMUoGtQB8gVN",
+	"EfQHFDeCb5X8C8M/CobUZSWtLpvIkoX4RdqleJk5PHNmRk1SE1EsOOVakUqTqNpjGgX28ScphcSHWIqY",
+	"Ss2oHa6JkOI35UlEKg8IF/pnkfCQ+KQm+EGD1TTxyX4Q/kqfJVThC+OaSh40fqPyOZVu34c+0YcxJRWi",
+	"tGS8TlKfRFSpoG53n/gt9YmkzxImaYhnWhtGO4j9J7SmcYd7jD/NMVnSQNPwUaBztvYJC/OHo6Du1jNN",
+	"I5U7pz8QSBkc2vegXnQF0w3rMU8ajWAfn7VMaA46SRzO8yKRjfxxReWjXBcnQGV4hc4ct9tobd+xISZ+",
+	"FtIxy2Zdyo92/vTVbAv21wDuJKSDvfIg3FNUrorXcaDU70Lm/7iIZAoDOaJLOjycnjm1GHfQ8YLcme/f",
+	"5zswbSYuZfxA2E0dpyzpvYCHHnrgfX+/SnzynErFBCcVcvdO+U4Z7REx5UHMSIV8a4fwHP3YuldqMP7U",
+	"PtWpvQ30PdBM8GpIKuQXqu/ZCWi2igVXDpVvymUn01xTbtcFcdxgNbuy9ETh+QOdHwuXryU9IBXyVWmU",
+	"EUr9dFCyujoVQeh3SFVNslg7v+AdXMGZaUEPLjzowXvzF3TgwryEHpzgBjsFrZtnlEskeVb8DR04gY55",
+	"AV1zDOcenEIbrswL6JkWWvHdWqx4a17BGbyHC2h7pmXNcUa1LdlUEkWBPMSZ/0APLs2R+RPOzEvz2oMT",
+	"nD8GoDn2BpcQC5XDh/tCZQhhU+8PIjxcmZ8ZFU/HYwU1M51i4V38mkRk5I9njkwLrqBjXkEXep7lzCl8",
+	"gDZ0b4kyiyjvBiA5mnQxrJzhGar0iZL6fQkpoYqVmvhZ3U0XCgoK1p6da9VIBhHVVCpSedAkDO1FhSI+",
+	"cTJKksHUcUL4GVQmhfbhjZUs0zItcwyX+HJzWLhT3lmDFU6EXsMpkgoZBh18R5Z18KMN5/ABOhie89Vr",
+	"COIFnPlI6BPzxrrUtf51PNPy4CrvNOjA/1niNlmYOhlpUFcBjFN2145b1lbDpdhqs/rnMHWnoKwdWUm7",
+	"dLgNr3LzuuJf++EZUBZS6N8+Sv30Nylmli5edRfNnqtd62JBeaVpdRn8MtCtSxAW3OAWlFHzeBQneUVU",
+	"cu082nxlVi4mYYiiqzSyMvbl5MWtC4O3w/taGAaYarGAm9tm7tkJ66jZ7N8chdvMWaXE+W0fUazhNH8s",
+	"AHN25zniyOr1LfMf0Cd3nrOK29sudEVdKPTgP0wWufwxbzJSs2RVbxm1yap+WcrkV/g3p1m7efyZqPZn",
+	"UGaZon+tJCmvVNGKXusGGoCtJtlUiluCZrN6guum2eZzZvnTBfBL7w+2OkqmeoWFUZKm6ccAAAD//64/",
+	"l3g1IAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

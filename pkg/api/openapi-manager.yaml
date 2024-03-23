@@ -309,12 +309,13 @@ components:
         - title
         - url
         - user_id
+        - tags
+        - images
         - created_at
         - updated_at
       properties:
         id:
           type: string
-          format: uuid
         title:
           type: string
           nullable: true
@@ -332,10 +333,8 @@ components:
           type: string
         created_at:
           type: string
-          format: date-time
         updated_at:
           type: string
-          format: date-time
 
     LinkCreate:
       type: object
@@ -343,6 +342,8 @@ components:
         - id
         - title
         - url
+        - tags
+        - images
         - user_id
       properties:
         id:
@@ -372,7 +373,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
         username:
           type: string
         password:
@@ -389,17 +389,14 @@ components:
       properties:
         id:
           type: string
-          format: uuid
         username:
           type: string
         password:
           type: string
         created_at:
           type: string
-          format: date-time
         updated_at:
           type: string
-          format: date-time
     Error:
       type: object
       required:

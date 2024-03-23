@@ -4,7 +4,7 @@ import "common.proto";
 
 package pb;
 
-option go_package = "gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/pb";
+option go_package = "gitlab.com/robotomize/gb-golang/homework/03-03-umanager/pkg/pb";
 
 service LinkService {
   rpc CreateLink(CreateLinkRequest) returns (Empty) {}
@@ -16,7 +16,7 @@ service LinkService {
 
 message Link {
   string id = 1;
-  string title = 2;
+  optional string title = 2;
   string url = 3;
   repeated string images = 4;
   repeated string tags = 5;
@@ -27,7 +27,7 @@ message Link {
 
 message CreateLinkRequest {
   string id = 1;
-  string title = 2;
+  optional string title = 2;
   string url = 3;
   repeated string images = 4;
   repeated string tags = 5;
@@ -40,7 +40,7 @@ message GetLinkRequest {
 
 message UpdateLinkRequest {
   string id = 1;
-  string title = 2;
+  optional string title = 2;
   string url = 3;
   repeated string images = 4;
   repeated string tags = 5;
