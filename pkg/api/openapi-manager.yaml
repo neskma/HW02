@@ -93,7 +93,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LinkCreate'
       responses:
-        '200':
+        '204':
           description: Объект успешно обновлен
         '400':
           description: Неверный запрос

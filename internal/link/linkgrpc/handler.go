@@ -22,6 +22,16 @@ type Handler struct {
 	timeout         time.Duration
 }
 
+func (h Handler) GetLinkByUserID(ctx context.Context, id *pb.GetLinksByUserId) (*pb.ListLinkResponse, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (h Handler) mustEmbedUnimplementedLinkServiceServer() {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (h Handler) CreateLink(ctx context.Context, request *pb.CreateLinkRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()

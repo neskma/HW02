@@ -4,11 +4,12 @@ import "common.proto";
 
 package pb;
 
-option go_package = "gitlab.com/robotomize/gb-golang/homework/03-03-umanager/pkg/pb";
+option go_package = "gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/pb";
 
 service LinkService {
   rpc CreateLink(CreateLinkRequest) returns (Empty) {}
   rpc GetLink(GetLinkRequest) returns (Link) {}
+  rpc GetLinkByUserID(GetLinksByUserId) returns(ListLinkResponse) {}
   rpc UpdateLink(UpdateLinkRequest) returns (Empty) {}
   rpc DeleteLink(DeleteLinkRequest) returns (Empty) {}
   rpc ListLinks(Empty) returns (ListLinkResponse) {}
@@ -53,4 +54,8 @@ message DeleteLinkRequest {
 
 message ListLinkResponse {
   repeated Link links = 1;
+}
+
+message GetLinksByUserId {
+  string user_id = 1;
 }

@@ -8,7 +8,6 @@ package pb
 
 import (
 	context "context"
-	pb "gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/pb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,11 +22,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LinkServiceClient interface {
-	CreateLink(ctx context.Context, in *CreateLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error)
+	CreateLink(ctx context.Context, in *CreateLinkRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetLink(ctx context.Context, in *GetLinkRequest, opts ...grpc.CallOption) (*Link, error)
-	UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error)
-	DeleteLink(ctx context.Context, in *DeleteLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error)
-	ListLinks(ctx context.Context, in *pb.Empty, opts ...grpc.CallOption) (*ListLinkResponse, error)
+	GetLinkByUserID(ctx context.Context, in *GetLinksByUserId, opts ...grpc.CallOption) (*ListLinkResponse, error)
+	UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteLink(ctx context.Context, in *DeleteLinkRequest, opts ...grpc.CallOption) (*Empty, error)
+	ListLinks(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListLinkResponse, error)
 }
 
 type linkServiceClient struct {
@@ -38,8 +38,8 @@ func NewLinkServiceClient(cc grpc.ClientConnInterface) LinkServiceClient {
 	return &linkServiceClient{cc}
 }
 
-func (c *linkServiceClient) CreateLink(ctx context.Context, in *CreateLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-	out := new(pb.Empty)
+func (c *linkServiceClient) CreateLink(ctx context.Context, in *CreateLinkRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/pb.LinkService/CreateLink", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,8 +56,17 @@ func (c *linkServiceClient) GetLink(ctx context.Context, in *GetLinkRequest, opt
 	return out, nil
 }
 
-func (c *linkServiceClient) UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-	out := new(pb.Empty)
+func (c *linkServiceClient) GetLinkByUserID(ctx context.Context, in *GetLinksByUserId, opts ...grpc.CallOption) (*ListLinkResponse, error) {
+	out := new(ListLinkResponse)
+	err := c.cc.Invoke(ctx, "/pb.LinkService/GetLinkByUserID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *linkServiceClient) UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/pb.LinkService/UpdateLink", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -65,8 +74,8 @@ func (c *linkServiceClient) UpdateLink(ctx context.Context, in *UpdateLinkReques
 	return out, nil
 }
 
-func (c *linkServiceClient) DeleteLink(ctx context.Context, in *DeleteLinkRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-	out := new(pb.Empty)
+func (c *linkServiceClient) DeleteLink(ctx context.Context, in *DeleteLinkRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/pb.LinkService/DeleteLink", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -74,7 +83,7 @@ func (c *linkServiceClient) DeleteLink(ctx context.Context, in *DeleteLinkReques
 	return out, nil
 }
 
-func (c *linkServiceClient) ListLinks(ctx context.Context, in *pb.Empty, opts ...grpc.CallOption) (*ListLinkResponse, error) {
+func (c *linkServiceClient) ListLinks(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ListLinkResponse, error) {
 	out := new(ListLinkResponse)
 	err := c.cc.Invoke(ctx, "/pb.LinkService/ListLinks", in, out, opts...)
 	if err != nil {
@@ -87,11 +96,12 @@ func (c *linkServiceClient) ListLinks(ctx context.Context, in *pb.Empty, opts ..
 // All implementations must embed UnimplementedLinkServiceServer
 // for forward compatibility
 type LinkServiceServer interface {
-	CreateLink(context.Context, *CreateLinkRequest) (*pb.Empty, error)
+	CreateLink(context.Context, *CreateLinkRequest) (*Empty, error)
 	GetLink(context.Context, *GetLinkRequest) (*Link, error)
-	UpdateLink(context.Context, *UpdateLinkRequest) (*pb.Empty, error)
-	DeleteLink(context.Context, *DeleteLinkRequest) (*pb.Empty, error)
-	ListLinks(context.Context, *pb.Empty) (*ListLinkResponse, error)
+	GetLinkByUserID(context.Context, *GetLinksByUserId) (*ListLinkResponse, error)
+	UpdateLink(context.Context, *UpdateLinkRequest) (*Empty, error)
+	DeleteLink(context.Context, *DeleteLinkRequest) (*Empty, error)
+	ListLinks(context.Context, *Empty) (*ListLinkResponse, error)
 	mustEmbedUnimplementedLinkServiceServer()
 }
 
@@ -99,19 +109,22 @@ type LinkServiceServer interface {
 type UnimplementedLinkServiceServer struct {
 }
 
-func (UnimplementedLinkServiceServer) CreateLink(context.Context, *CreateLinkRequest) (*pb.Empty, error) {
+func (UnimplementedLinkServiceServer) CreateLink(context.Context, *CreateLinkRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateLink not implemented")
 }
 func (UnimplementedLinkServiceServer) GetLink(context.Context, *GetLinkRequest) (*Link, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLink not implemented")
 }
-func (UnimplementedLinkServiceServer) UpdateLink(context.Context, *UpdateLinkRequest) (*pb.Empty, error) {
+func (UnimplementedLinkServiceServer) GetLinkByUserID(context.Context, *GetLinksByUserId) (*ListLinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLinkByUserID not implemented")
+}
+func (UnimplementedLinkServiceServer) UpdateLink(context.Context, *UpdateLinkRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateLink not implemented")
 }
-func (UnimplementedLinkServiceServer) DeleteLink(context.Context, *DeleteLinkRequest) (*pb.Empty, error) {
+func (UnimplementedLinkServiceServer) DeleteLink(context.Context, *DeleteLinkRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteLink not implemented")
 }
-func (UnimplementedLinkServiceServer) ListLinks(context.Context, *pb.Empty) (*ListLinkResponse, error) {
+func (UnimplementedLinkServiceServer) ListLinks(context.Context, *Empty) (*ListLinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListLinks not implemented")
 }
 func (UnimplementedLinkServiceServer) mustEmbedUnimplementedLinkServiceServer() {}
@@ -163,6 +176,24 @@ func _LinkService_GetLink_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LinkService_GetLinkByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLinksByUserId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LinkServiceServer).GetLinkByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.LinkService/GetLinkByUserID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LinkServiceServer).GetLinkByUserID(ctx, req.(*GetLinksByUserId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LinkService_UpdateLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateLinkRequest)
 	if err := dec(in); err != nil {
@@ -200,7 +231,7 @@ func _LinkService_DeleteLink_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _LinkService_ListLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(pb.Empty)
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -212,7 +243,7 @@ func _LinkService_ListLinks_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/pb.LinkService/ListLinks",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LinkServiceServer).ListLinks(ctx, req.(*pb.Empty))
+		return srv.(LinkServiceServer).ListLinks(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -231,6 +262,10 @@ var LinkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLink",
 			Handler:    _LinkService_GetLink_Handler,
+		},
+		{
+			MethodName: "GetLinkByUserID",
+			Handler:    _LinkService_GetLinkByUserID_Handler,
 		},
 		{
 			MethodName: "UpdateLink",
