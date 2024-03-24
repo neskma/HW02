@@ -318,7 +318,6 @@ components:
           type: string
         title:
           type: string
-          nullable: true
         url:
           type: string
         images:
@@ -350,7 +349,6 @@ components:
           type: string
         title:
           type: string
-          nullable: true
         url:
           type: string
         images:
