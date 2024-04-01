@@ -18,8 +18,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/database"
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/env/config"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/env/config"
 )
 
 var (

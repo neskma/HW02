@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/database"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
 )
 
 type usersRepository interface {

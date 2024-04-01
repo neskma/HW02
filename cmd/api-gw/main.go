@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/env"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/env"
 )
 
 func main() {

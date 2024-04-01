@@ -19,8 +19,8 @@ import (
 	"github.com/sethvargo/go-envconfig"
 	"github.com/stretchr/testify/require"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/database"
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/internal/env/config"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/env/config"
 )
 
 var (

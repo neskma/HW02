@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-02-umanager/pkg/api/apiv1"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/pkg/api/apiv1"
 )
 
 // Router has base path /api/v1
