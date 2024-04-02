@@ -2,52 +2,86 @@ package linkgrpc
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
+	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
-	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/link/linkrepository"
-	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/user/userrepository"
 	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/pkg/pb"
 )
 
+var _ pb.LinkServiceServer = (*Handler)(nil)
+
+func New(linksRepository linksRepository, timeout time.Duration, publisher amqpPublisher) *Handler {
+	return &Handler{linksRepository: linksRepository, timeout: timeout, pub: publisher}
+}
+
 type Handler struct {
 	pb.UnimplementedLinkServiceServer
-	linksRepo linkrepository.Repository
-	usersRepo userrepository.Repository
-	timeout   time.Duration
+	linksRepository linksRepository
+	pub             amqpPublisher
+	timeout         time.Duration
 }
 
-func New(linksRepo linkrepository.Repository, usersRepo userrepository.Repository, timeout time.Duration) *Handler {
-	return &Handler{
-		linksRepo: linksRepo,
-		usersRepo: usersRepo,
-		timeout:   timeout,
-	}
-}
-
-func (h *Handler) GetLinkByUserID(ctx context.Context, id *pb.GetLinksByUserId) (*pb.ListLinkResponse, error) {
+func (h Handler) GetLinkByUserID(ctx context.Context, id *pb.GetLinksByUserId) (*pb.ListLinkResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	list, err := h.linksRepo.FindByUserID(ctx, id.UserId)
+	list, err := h.linksRepository.FindByUserID(ctx, id.UserId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var respList []*pb.Link
+	respList := make([]*pb.Link, 0, len(list))
+
 	for _, l := range list {
-		respList = append(respList, database.LinkToPBLink(&l))
+		respList = append(
+			respList, &pb.Link{
+				Id:        l.ID.Hex(),
+				Title:     l.Title,
+				Url:       l.URL,
+				Images:    l.Images,
+				Tags:      l.Tags,
+				UserId:    l.UserID,
+				CreatedAt: l.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
+			},
+		)
 	}
 
 	return &pb.ListLinkResponse{Links: respList}, nil
 }
 
-func (h *Handler) CreateLink(ctx context.Context, request *pb.CreateLinkRequest) (*pb.Empty, error) {
+func sendMessageToQueue(pub amqpPublisher, objectID primitive.ObjectID) error {
+	type message struct {
+		ID string `json:"id"`
+	}
+
+	encoded, err := json.Marshal(message{ID: objectID.Hex()})
+	if err != nil {
+		return err
+	}
+
+	const queueName = "link_queue"
+	err = pub.Publish(
+		"", queueName, false, false, amqp.Publishing{
+			ContentType: "application/json",
+			Body:        encoded,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h Handler) CreateLink(ctx context.Context, request *pb.CreateLinkRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -56,23 +90,30 @@ func (h *Handler) CreateLink(ctx context.Context, request *pb.CreateLinkRequest)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := h.validateUserExistence(ctx, request.UserId); err != nil {
-		return nil, err
-	}
-
-	if _, err := h.linksRepo.Create(ctx, database.PBLinkToLink(request)); err != nil {
+	if _, err := h.linksRepository.Create(
+		ctx, database.CreateLinkReq{
+			ID:     objectID,
+			URL:    request.Url,
+			Title:  request.Title,
+			Tags:   request.Tags,
+			Images: request.Images,
+			UserID: request.UserId,
+		},
+	); err != nil {
 		if errors.Is(err, database.ErrConflict) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// implement AMQP publishing here
+	if err := sendMessageToQueue(h.pub, objectID); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h *Handler) GetLink(ctx context.Context, request *pb.GetLinkRequest) (*pb.Link, error) {
+func (h Handler) GetLink(ctx context.Context, request *pb.GetLinkRequest) (*pb.Link, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -81,7 +122,7 @@ func (h *Handler) GetLink(ctx context.Context, request *pb.GetLinkRequest) (*pb.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	l, err := h.linksRepo.FindByID(ctx, objectID)
+	l, err := h.linksRepository.FindByID(ctx, objectID)
 	if err != nil {
 		if errors.Is(err, database.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -89,10 +130,19 @@ func (h *Handler) GetLink(ctx context.Context, request *pb.GetLinkRequest) (*pb.
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return database.LinkToPBLink(&l), nil
+	return &pb.Link{
+		Id:        l.ID.Hex(),
+		Title:     l.Title,
+		Url:       l.URL,
+		Images:    l.Images,
+		Tags:      l.Tags,
+		UserId:    l.UserID,
+		CreatedAt: l.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
+	}, nil
 }
 
-func (h *Handler) UpdateLink(ctx context.Context, request *pb.UpdateLinkRequest) (*pb.Empty, error) {
+func (h Handler) UpdateLink(ctx context.Context, request *pb.UpdateLinkRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -101,18 +151,23 @@ func (h *Handler) UpdateLink(ctx context.Context, request *pb.UpdateLinkRequest)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := h.validateUserExistence(ctx, request.UserId); err != nil {
-		return nil, err
-	}
-
-	if _, err := h.linksRepo.Update(ctx, database.PBLinkToLink(request)); err != nil {
+	if _, err := h.linksRepository.Update(
+		ctx, database.UpdateLinkReq{
+			ID:     objectID,
+			URL:    request.Url,
+			Title:  request.Title,
+			Tags:   request.Tags,
+			Images: request.Images,
+			UserID: request.UserId,
+		},
+	); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h *Handler) DeleteLink(ctx context.Context, request *pb.DeleteLinkRequest) (*pb.Empty, error) {
+func (h Handler) DeleteLink(ctx context.Context, request *pb.DeleteLinkRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
@@ -121,41 +176,38 @@ func (h *Handler) DeleteLink(ctx context.Context, request *pb.DeleteLinkRequest)
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := h.linksRepo.Delete(ctx, objectID); err != nil {
+	if err := h.linksRepository.Delete(ctx, objectID); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h *Handler) ListLinks(ctx context.Context, request *pb.Empty) (*pb.ListLinkResponse, error) {
+func (h Handler) ListLinks(ctx context.Context, request *pb.Empty) (*pb.ListLinkResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	list, err := h.linksRepo.FindAll(ctx)
+	list, err := h.linksRepository.FindAll(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var respList []*pb.Link
+	respList := make([]*pb.Link, 0, len(list))
+
 	for _, l := range list {
-		respList = append(respList, database.LinkToPBLink(&l))
+		respList = append(
+			respList, &pb.Link{
+				Id:        l.ID.Hex(),
+				Title:     l.Title,
+				Url:       l.URL,
+				Images:    l.Images,
+				Tags:      l.Tags,
+				UserId:    l.UserID,
+				CreatedAt: l.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
+			},
+		)
 	}
 
 	return &pb.ListLinkResponse{Links: respList}, nil
-}
-
-func (h *Handler) validateUserExistence(ctx context.Context, userID string) error {
-	if _, err := primitive.ObjectIDFromHex(userID); err != nil {
-		return status.Error(codes.InvalidArgument, "invalid user ID")
-	}
-
-	if _, err := h.usersRepo.FindByID(ctx, userID); err != nil {
-		if errors.Is(err, database.ErrNotFound) {
-			return status.Error(codes.NotFound, "user not found")
-		}
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	return nil
 }

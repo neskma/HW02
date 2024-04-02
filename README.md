@@ -1,2 +1,2 @@
-В этом задании работал над файлами users.go и links.go, которые лежат в internal/apigw/v1. 
-И над файлами handler.go по пути internal/link/linkgrpc и internal/user/usergrpc
+В этом задании работал над файлами handler.go по пути internal/link/linkgrpc. Отправка сообщения через func sendMessageToQueue.
+Дописан вариант internal/link/stories/link-updater/story.go и contracts.go

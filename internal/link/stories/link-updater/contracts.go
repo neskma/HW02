@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
+	"gitlab.com/robotomize/gb-golang/homework/03-04-umanager/internal/database"
 )
 
 type repository interface {
@@ -19,4 +19,11 @@ type amqpConsumer interface {
 		<-chan amqp.Delivery,
 		error,
 	)
+}
+
+type logger interface {
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Error(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
 }
