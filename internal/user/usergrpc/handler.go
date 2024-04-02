@@ -10,63 +10,62 @@ import (
 	"google.golang.org/grpc/status"
 
 	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/database"
+	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/internal/user/userrepository"
 	"gitlab.com/robotomize/gb-golang/homework/03-03-umanager/pkg/pb"
 )
 
-var _ pb.UserServiceServer = (*Handler)(nil)
-
-func New(usersRepository usersRepository, timeout time.Duration) *Handler {
-	return &Handler{usersRepository: usersRepository, timeout: timeout}
-}
-
 type Handler struct {
 	pb.UnimplementedUserServiceServer
-	usersRepository usersRepository
-	timeout         time.Duration
+	usersRepo userrepository.Repository
+	timeout   time.Duration
 }
 
-func (h Handler) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.Empty, error) {
+func New(usersRepo userrepository.Repository, timeout time.Duration) *Handler {
+	return &Handler{
+		usersRepo: usersRepo,
+		timeout:   timeout,
+	}
+}
+
+func (h *Handler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	parsedUUID, err := uuid.Parse(in.Id)
+	parsedUUID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, err = h.usersRepository.Create(
-		ctx, database.CreateUserReq{
-			ID:       parsedUUID,
-			Username: in.Username,
-			Password: in.Password,
-		},
-	)
-	if err != nil {
+	if _, err := h.usersRepo.Create(ctx, database.User{
+		ID:        parsedUUID,
+		Username:  req.Username,
+		Password:  req.Password,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}); err != nil {
 		if errors.Is(err, database.ErrConflict) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
-
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h Handler) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, error) {
+func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	parsedUUID, err := uuid.Parse(in.Id)
+	parsedUUID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	user, err := h.usersRepository.FindByID(ctx, parsedUUID)
+	user, err := h.usersRepo.FindByID(ctx, parsedUUID)
 	if err != nil {
 		if errors.Is(err, database.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
-
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -79,73 +78,62 @@ func (h Handler) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, 
 	}, nil
 }
 
-func (h Handler) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.Empty, error) {
+func (h *Handler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	parsedUUID, err := uuid.Parse(in.Id)
+	parsedUUID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	_, err = h.usersRepository.Create(
-		ctx, database.CreateUserReq{
-			ID:       parsedUUID,
-			Username: in.Username,
-			Password: in.Password,
-		},
-	)
-	if err != nil {
+	if _, err := h.usersRepo.Update(ctx, database.User{
+		ID:        parsedUUID,
+		Username:  req.Username,
+		Password:  req.Password,
+		UpdatedAt: time.Now(),
+	}); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h Handler) DeleteUser(
-	ctx context.Context,
-	in *pb.DeleteUserRequest,
-) (*pb.Empty, error) {
+func (h *Handler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.Empty, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	parsedUUID, err := uuid.Parse(in.Id)
+	parsedUUID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := h.usersRepository.DeleteByUserID(ctx, parsedUUID); err != nil {
+	if err := h.usersRepo.Delete(ctx, parsedUUID); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.Empty{}, nil
 }
 
-func (h Handler) ListUsers(
-	ctx context.Context,
-	in *pb.Empty,
-) (*pb.ListUsersResponse, error) {
+func (h *Handler) ListUsers(ctx context.Context, req *pb.Empty) (*pb.ListUsersResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, h.timeout)
 	defer cancel()
 
-	list, err := h.usersRepository.FindAll(ctx)
+	users, err := h.usersRepo.FindAll(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	respList := make([]*pb.User, 0, len(list))
-
-	for _, l := range list {
-		respList = append(
-			respList, &pb.User{
-				Id:        l.ID.String(),
-				Username:  l.Username,
-				Password:  l.Password,
-				CreatedAt: l.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: l.UpdatedAt.Format(time.RFC3339),
-			},
-		)
+	var respUsers []*pb.User
+	for _, user := range users {
+		respUsers = append(respUsers, &pb.User{
+			Id:        user.ID.String(),
+			Username:  user.Username,
+			Password:  user.Password,
+			CreatedAt: user.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
+		})
 	}
 
-	return &pb.ListUsersResponse{Users: respList}, nil
+	return &pb.ListUsersResponse{Users: respUsers}, nil
 }

@@ -25,19 +25,13 @@ func (h *usersHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Преобразование списка пользователей в API v1 формат
 	userList := make([]apiv1.User, 0, len(resp.Users))
 	for _, u := range resp.Users {
-		userList = append(
-			userList, apiv1.User{
-				CreatedAt: u.CreatedAt,
-				Id:        u.Id,
-				Password:  u.Password,
-				UpdatedAt: u.UpdatedAt,
-				Username:  u.Username,
-			},
-		)
+		userList = append(userList, conv.ToAPIV1User(u))
 	}
 
+	// Отправка ответа с данными пользователей
 	httputil.MarshalResponse(w, http.StatusOK, userList)
 }
 
@@ -47,22 +41,15 @@ func (h *usersHandler) PostUsers(w http.ResponseWriter, r *http.Request) {
 	var u apiv1.UserCreate
 	code, err := httputil.Unmarshal(w, r, &u)
 	if err != nil {
-		httputil.MarshalResponse(
-			w, code, apiv1.Error{
-				Code:    httputil.ConvertHTTPToErrorCode(code),
-				Message: conv.ToPtr(err.Error()),
-			},
-		)
+		httputil.MarshalResponse(w, code, apiv1.Error{
+			Code:    httputil.ConvertHTTPToErrorCode(code),
+			Message: conv.ToPtr(err.Error()),
+		})
 		return
 	}
 
-	if _, err := h.client.CreateUser(
-		ctx, &pb.CreateUserRequest{
-			Id:       u.Id,
-			Username: u.Username,
-			Password: u.Password,
-		},
-	); err != nil {
+	// Создание нового пользователя через gRPC клиент
+	if _, err := h.client.CreateUser(ctx, conv.ToGRPCUserCreate(u)); err != nil {
 		handleGRPCError(w, err)
 		return
 	}
@@ -73,6 +60,7 @@ func (h *usersHandler) PostUsers(w http.ResponseWriter, r *http.Request) {
 func (h *usersHandler) DeleteUsersId(w http.ResponseWriter, r *http.Request, id string) {
 	ctx := r.Context()
 
+	// Удаление пользователя через gRPC клиент
 	if _, err := h.client.DeleteUser(ctx, &pb.DeleteUserRequest{Id: id}); err != nil {
 		handleGRPCError(w, err)
 		return
@@ -84,21 +72,18 @@ func (h *usersHandler) DeleteUsersId(w http.ResponseWriter, r *http.Request, id 
 func (h *usersHandler) GetUsersId(w http.ResponseWriter, r *http.Request, id string) {
 	ctx := r.Context()
 
+	// Получение пользователя по ID через gRPC клиент
 	u, err := h.client.GetUser(ctx, &pb.GetUserRequest{Id: id})
 	if err != nil {
 		handleGRPCError(w, err)
 		return
 	}
 
-	httputil.MarshalResponse(
-		w, http.StatusOK, apiv1.User{
-			CreatedAt: u.CreatedAt,
-			Id:        u.Id,
-			Password:  u.Password,
-			UpdatedAt: u.UpdatedAt,
-			Username:  u.Username,
-		},
-	)
+	// Преобразование пользователя в API v1 формат
+	user := conv.ToAPIV1User(*u)
+
+	// Отправка ответа с данными пользователя
+	httputil.MarshalResponse(w, http.StatusOK, user)
 }
 
 func (h *usersHandler) PutUsersId(w http.ResponseWriter, r *http.Request, id string) {
@@ -107,24 +92,26 @@ func (h *usersHandler) PutUsersId(w http.ResponseWriter, r *http.Request, id str
 	var u apiv1.UserCreate
 	code, err := httputil.Unmarshal(w, r, &u)
 	if err != nil {
-		httputil.MarshalResponse(
-			w, code, apiv1.Error{
-				Code:    httputil.ConvertHTTPToErrorCode(code),
-				Message: conv.ToPtr(err.Error()),
-			},
-		)
+		httputil.MarshalResponse(w, code, apiv1.Error{
+			Code:    httputil.ConvertHTTPToErrorCode(code),
+			Message: conv.ToPtr(err.Error()),
+		})
 		return
 	}
 
-	if _, err := h.client.UpdateUser(
-		ctx, &pb.UpdateUserRequest{
-			Id:       u.Id,
-			Username: u.Username,
-			Password: u.Password,
-		},
-	); err != nil {
+	// Обновление информации о пользователе через gRPC клиент
+	if _, err := h.client.UpdateUser(ctx, conv.ToGRPCUserUpdate(id, u)); err != nil {
 		handleGRPCError(w, err)
 		return
 	}
+
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func handleGRPCError(w http.ResponseWriter, err error) {
+	// Обработка ошибки gRPC
+	httputil.MarshalResponse(w, http.StatusInternalServerError, apiv1.Error{
+		Code:    http.StatusInternalServerError,
+		Message: conv.ToPtr(err.Error()),
+	})
 }
